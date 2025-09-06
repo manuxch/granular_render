@@ -22,7 +22,7 @@ Ejemplo:
 
     ./granular_render ./frames 8 -10 10 -5 30 0.05
 
-# Formato de archivo xy 
+## Formato de archivo xy 
 
 El programa lee archivos de texto con extensión `.xy` que tiene el siguiente formato:
 
@@ -32,11 +32,15 @@ id nv v1x v1y v2x v2y ... vnvx vnvy type
 ...
 id 1 x y r type
 ...
+id nv v1x v1y v2x v2y ... vnvx vnvy BOX
+...
 ```
 Cada grano tiene un `id` entero positivo, `nv` es el número de vértices que tiene el polígono 
-que representa al grano, y `type` es un entero que denota el tipo de grano.
+que representa al grano. A continuación está la lista de coordenadas de cada vcértice,
+y finalmente `type` es un entero que denota el tipo de grano.
 
 Cuando `nv = 1`, la línea representa un grano circular o disco, `x` y `y` son las coordenadas
 del centro del disco, y `r` su radio.
 
-Las paredes de los contenedores son también poligonales, pero con `id < 0`.
+Las paredes de los contenedores son también poligonales, pero con `id < 0`. En vez 
+de un `id` entero, las paredes finalizan la línea con la palabra `BOX`.
