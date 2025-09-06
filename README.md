@@ -18,5 +18,7 @@ make
 
     ./granular_render <directorio con *.xy> nthreads xmin xmax ymin ymax [margin]
 
-Ejemplo: ./granular_render ./frames 8 -10 10 -5 30 0.05
+Ejemplo: 
+
+    ./granular_render ./frames 8 -10 10 -5 30 0.05
 
