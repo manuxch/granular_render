@@ -19,7 +19,8 @@ make
     ./granular_render <directorio con *.xy> nthreads xmin xmax ymin ymax [margin]
 
 donde `xmin`, `xmax`, `ymin` y `ymax` son las coordenadas de una región rectangular donde se 
-genera el gráfico, en las unidades de Box2D.
+genera el gráfico, en las unidades de Box2D. Margin es la fracción del rango de coordenadas
+que se deja de margen en la figura (por defecto 0.05 o 5%).
 
 Ejemplo: 
 
@@ -39,7 +40,7 @@ id nv v1x v1y v2x v2y ... vnvx vnvy BOX
 ...
 ```
 Cada grano tiene un `id` entero positivo, `nv` es el número de vértices que tiene el polígono 
-que representa al grano. A continuación está la lista de coordenadas de cada vcértice,
+que representa al grano. A continuación está la lista de coordenadas de cada vértice,
 y finalmente `type` es un entero que denota el tipo de grano.
 
 Cuando `nv = 1`, la línea representa un grano circular o disco, `x` y `y` son las coordenadas
