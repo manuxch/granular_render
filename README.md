@@ -18,6 +18,9 @@ make
 
     ./granular_render <directorio con *.xy> nthreads xmin xmax ymin ymax [margin]
 
+donde `xmin`, `xmax`, `ymin` y `ymax` son las coordenadas de una región rectangular donde se 
+genera el gráfico, en las unidades de Box2D.
+
 Ejemplo: 
 
     ./granular_render ./frames 8 -10 10 -5 30 0.05
