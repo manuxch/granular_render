@@ -3,8 +3,8 @@
 #include <vector>
 
 // Dimensiones por defecto del canvas
-constexpr int DEFAULT_WIDTH = 1000;
-constexpr int DEFAULT_HEIGHT = 1000;
+constexpr int DEFAULT_WIDTH = 2500;
+constexpr int DEFAULT_HEIGHT = 2500;
 
 // Porcentaje de margen de la imagen (5%)
 constexpr double DEFAULT_MARGIN = 0.05;

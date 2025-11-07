@@ -22,11 +22,16 @@ struct Polygon {
   int id;
 };
 
+struct Line {
+    std::vector<std::pair<double, double>> endpoints;
+    int id;
+};
+
 // ---------------------
 // Colores por tipo
 // ---------------------
 static void setColorForType(cairo_t *cr, int type) {
-  auto [r, g, b] = COLORS[type % COLORS.size()];
+  auto [r, g, b] = COLORS[static_cast<size_t>(type) % COLORS.size()];
   cairo_set_source_rgb(cr, r, g, b);
 }
 
@@ -44,6 +49,7 @@ void renderFile(const std::string &inputFile, const std::string &outputFile,
 
   std::vector<Circle> circles;
   std::vector<Polygon> polygons;
+  std::vector<Line> lines;
   std::string line;
 
   while (std::getline(in, line)) {
@@ -57,7 +63,16 @@ void renderFile(const std::string &inputFile, const std::string &outputFile,
       double x, y, r;
       iss >> x >> y >> r >> type;
       circles.push_back({x, y, r, type, id});
-    } else {
+    } 
+    else if (nvert == 2) {
+        std::vector<std::pair<double, double>> endpts;
+        double p1x, p1y, p2x, p2y;
+        iss >> p1x >> p1y >> p2x >> p2y;
+        endpts.push_back({p1x, p1y});
+        endpts.push_back({p2x, p2y});
+        lines.push_back({endpts, id});
+    } 
+    else {
       std::vector<std::pair<double, double>> verts;
       for (int i = 0; i < nvert; i++) {
         double vx, vy;
@@ -117,11 +132,11 @@ void renderFile(const std::string &inputFile, const std::string &outputFile,
 
     if (poly.id < 0) {
       // Contenedor
-      cairo_set_source_rgb(cr, 1, 1, 1);
-      cairo_fill_preserve(cr);
       cairo_set_source_rgb(cr, 0, 0, 0);
+      cairo_fill_preserve(cr);
       cairo_set_line_width(cr, BORDER_WIDTH_CONTAINER);
       cairo_stroke(cr);
+      cairo_close_path(cr);
     } else {
       // Grano
       setColorForType(cr, poly.type);
@@ -132,6 +147,22 @@ void renderFile(const std::string &inputFile, const std::string &outputFile,
       cairo_close_path(cr);
     }
   }
+
+  // ---------------------
+  // Dibujar líneas
+  // ---------------------
+  for (auto &lin : lines) {
+    if (lin.endpoints.empty())
+      continue;
+    cairo_move_to(cr, lin.endpoints[0].first, lin.endpoints[0].second);
+    cairo_line_to(cr, lin.endpoints[1].first, lin.endpoints[1].second);
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    cairo_fill_preserve(cr);
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_set_line_width(cr, BORDER_WIDTH_CONTAINER);
+    cairo_stroke(cr);
+  }
+
 
   // ---------------------
   // Dibujar círculos
