@@ -1,11 +1,14 @@
 #include "renderer.hpp"
 #include "config.hpp"
 #include <cairo/cairo.h>
+#include <cairo/cairo-pdf.h>
+#include <cairo/cairo-svg.h>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 // ---------------------
 // Estructuras
@@ -84,9 +87,34 @@ void renderFile(const std::string &inputFile, const std::string &outputFile,
     }
   }
 
-  cairo_surface_t *surface =
-      cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  cairo_t *cr = cairo_create(surface);
+  cairo_surface_t *surface = nullptr;
+  cairo_t *cr = nullptr;
+
+  // Determinar el tipo de surface basado en la extensión del archivo
+  if (outputFile.size() >= 4 && 
+      outputFile.compare(outputFile.size() - 4, 4, ".png") == 0) {
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  } 
+  else if (outputFile.size() >= 4 && 
+           outputFile.compare(outputFile.size() - 4, 4, ".pdf") == 0) {
+    surface = cairo_pdf_surface_create(outputFile.c_str(), width, height);
+  }
+  else if (outputFile.size() >= 4 && 
+           outputFile.compare(outputFile.size() - 4, 4, ".svg") == 0) {
+    surface = cairo_svg_surface_create(outputFile.c_str(), width, height);
+  }
+  else {
+    std::cerr << "Formato no soportado: " << outputFile 
+              << " (usando PNG por defecto)\n";
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  }
+
+  if (!surface) {
+    std::cerr << "Error creando surface para " << outputFile << "\n";
+    return;
+  }
+
+  cr = cairo_create(surface);
 
   // Fondo blanco
   cairo_set_source_rgb(cr, 1, 1, 1);
@@ -187,6 +215,12 @@ void renderFile(const std::string &inputFile, const std::string &outputFile,
   }
 
   cairo_destroy(cr);
-  cairo_surface_write_to_png(surface, outputFile.c_str());
+  
+  // Solo escribir PNG para image surfaces
+  if (outputFile.size() >= 4 && 
+      outputFile.compare(outputFile.size() - 4, 4, ".png") == 0) {
+    cairo_surface_write_to_png(surface, outputFile.c_str());
+  }
+  
   cairo_surface_destroy(surface);
 }

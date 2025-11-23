@@ -10,6 +10,8 @@ namespace fs = std::filesystem;
 
 // Función para mostrar ayuda
 void show_help(const std::string& program_name) {
+    std::cout << "granular_render v1.1 [2025.11.21].\n";
+    std::cout << "Autor: Manuel Carlevaro.\n";
     std::cout << "Uso: " << program_name << " [OPCIONES]\n\n";
     std::cout << "Opciones obligatorias:\n";
     std::cout << "  -d, --dir DIRECTORIO    Directorio con archivos *.xy\n";
@@ -20,11 +22,14 @@ void show_help(const std::string& program_name) {
     std::cout << "  -W, --width W           Ancho de la imagen (default: " << DEFAULT_WIDTH << ")\n";
     std::cout << "  -H, --height H          Alto de la imagen (default: " << DEFAULT_HEIGHT << ")\n";
     std::cout << "  -m, --margin M          Margen alrededor (default: " << DEFAULT_MARGIN << ")\n";
+    std::cout << "  -f, --format FORMATO    Formato de salida: png, pdf, svg (default: png)\n";
     std::cout << "  -h, --help              Mostrar esta ayuda\n\n";
     std::cout << "Ejemplos:\n";
     std::cout << "  " << program_name << " -d ./frames -x -10 10 -5 30\n";
     std::cout << "  " << program_name << " --dir frames --xylimits -5 5 -5 5 --width 1920 --height 1080\n";
     std::cout << "  " << program_name << " -d frames -x -8 8 -2 25 -t 4 -W 1200 -H 800 -m 0.02\n";
+    std::cout << "  " << program_name << " -d frames -x -5 5 -5 5 -f pdf\n";
+    std::cout << "  " << program_name << " -d frames -x -5 5 -5 5 --format svg\n";
 }
 
 // Función para parsear argumentos
@@ -33,7 +38,8 @@ bool parse_arguments(int argc, char** argv,
                     unsigned int& nthreads,
                     double& xmin, double& xmax, double& ymin, double& ymax,
                     int& width, int& height,
-                    double& margin) {
+                    double& margin,
+                    std::string& format) {  // <- Nuevo parámetro
     
     // Valores por defecto
     dir = "";
@@ -42,6 +48,7 @@ bool parse_arguments(int argc, char** argv,
     width = DEFAULT_WIDTH;
     height = DEFAULT_HEIGHT;
     margin = DEFAULT_MARGIN;
+    format = "png";  // <- Valor por defecto
     
     std::vector<std::string> args(argv + 1, argv + argc);
     
@@ -116,6 +123,20 @@ bool parse_arguments(int argc, char** argv,
                 return false;
             }
         }
+        else if (args[i] == "-f" || args[i] == "--format") {  // <- Nueva opción
+            if (i + 1 < args.size()) {
+                format = args[++i];
+                // Validar formato
+                if (format != "png" && format != "pdf" && format != "svg") {
+                    std::cerr << "Error: Formato no soportado: " << format 
+                              << " (usar: png, pdf, svg)\n";
+                    return false;
+                }
+            } else {
+                std::cerr << "Error: Falta el formato después de " << args[i] << "\n";
+                return false;
+            }
+        }
         else {
             std::cerr << "Error: Argumento desconocido: " << args[i] << "\n";
             show_help(argv[0]);
@@ -148,8 +169,10 @@ int main(int argc, char** argv) {
     double xmin, xmax, ymin, ymax;
     int width, height;
     double margin;
+    std::string format;  // <- Nueva variable
     
-    if (!parse_arguments(argc, argv, dir, nthreads, xmin, xmax, ymin, ymax, width, height, margin)) {
+    if (!parse_arguments(argc, argv, dir, nthreads, xmin, xmax, ymin, ymax, 
+                        width, height, margin, format)) {
         return 1;
     }
     
@@ -167,7 +190,8 @@ int main(int argc, char** argv) {
     std::cout << "  Hilos: " << nthreads << "\n";
     std::cout << "  Límites: x=[" << xmin << ", " << xmax << "] y=[" << ymin << ", " << ymax << "]\n";
     std::cout << "  Tamaño: " << width << "x" << height << "\n";
-    std::cout << "  Margen: " << margin << "\n\n";
+    std::cout << "  Margen: " << margin << "\n";
+    std::cout << "  Formato: " << format << "\n\n";  // <- Mostrar formato
     
     // Verificar que el directorio existe
     if (!fs::exists(dir)) {
@@ -182,7 +206,7 @@ int main(int argc, char** argv) {
         if (entry.path().extension() == ".xy") {
             std::string inputFile = entry.path().string();
             auto outPath = entry.path();
-            outPath.replace_extension(".png");
+            outPath.replace_extension("." + format);  // <- Usar el formato especificado
             std::string outputFile = outPath.string();
             
             pool.enqueue([=, &processed_files]() {
