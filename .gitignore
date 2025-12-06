@@ -43,5 +43,8 @@
 # Subdirectorio build 
 build/
 
+# Subdirectorio bin 
+bin/
+
 # Subdirectorio tmp 
 tmp/
